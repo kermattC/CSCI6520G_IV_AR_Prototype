@@ -1,0 +1,16 @@
+{
+  "images" : [
+    {
+      "filename" : "iv_prototype_reference.PNG",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "unit" : "inches",
+    "width" : 23.399999999999999
+  }
+}
