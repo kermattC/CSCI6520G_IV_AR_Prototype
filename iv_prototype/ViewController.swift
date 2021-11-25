@@ -10,17 +10,13 @@ import SceneKit
 import ARKit
 
 class ViewController: UIViewController {
-    
-    // array of planes detected. used for the overlay rectangles of detected planes
-    var planes = [OverlayRectangle]()
-    
+    // used to cycle through different objects to use as guides
     var targetFlip: Int = 0
 
-    // add a button
+    // declare buttons
     @IBOutlet var superAwesomeButton: UIButton!
     @IBOutlet var targetChangeButton: UIButton!
 
-    
     // counter that will be flipped
     var imageCounter: Int = 0
     
@@ -38,12 +34,14 @@ class ViewController: UIViewController {
         // Create a new scene
         let scene = SCNScene()
         
+        // function to define and add buttons to the scene
         setupButtons()
         
         // Set the scene to the view
         sceneView.scene = scene
     }
     
+    // adds a gif as a node. the function creates the geometry and returns a node with a gif on it
     func addGif(name: String, number: Int) -> SCNNode {
         let gifNode = SCNNode()
         let gifPlane = SCNPlane(width: 0.00025, height: 0.0005)
@@ -64,6 +62,7 @@ class ViewController: UIViewController {
         return gifNode
     }
     
+    // define and add buttons to the scene
     private func setupButtons(){
         superAwesomeButton = UIButton(frame: CGRect(x: UIScreen.main.bounds.width * 0.75, y: UIScreen.main.bounds.height * 0.5, width: UIScreen.main.bounds.width * 0.15, height: UIScreen.main.bounds.width * 0.075))
         superAwesomeButton.backgroundColor = .clear
@@ -72,7 +71,7 @@ class ViewController: UIViewController {
         superAwesomeButton .layer.cornerRadius = 5.0
         superAwesomeButton.setTitle("Press Me", for: .normal)
         superAwesomeButton.setTitleColor(UIColor(red: 255.0/255.0, green: 255.0/255.0, blue: 255.0/255.0, alpha: 0.7), for: UIControl.State.normal)
-        superAwesomeButton.addTarget(self, action: #selector(specialTing(_:)), for: .touchUpInside)
+        superAwesomeButton.addTarget(self, action: #selector(cyclePictures(_:)), for: .touchUpInside)
         
         targetChangeButton = UIButton(frame: CGRect(x: UIScreen.main.bounds.width * 0.75, y: UIScreen.main.bounds.height * 0.6, width: UIScreen.main.bounds.width * 0.15, height: UIScreen.main.bounds.width * 0.075))
         targetChangeButton.backgroundColor = .clear
@@ -81,19 +80,20 @@ class ViewController: UIViewController {
         targetChangeButton .layer.cornerRadius = 5.0
         targetChangeButton.setTitle("Target", for: .normal)
         targetChangeButton.setTitleColor(UIColor(red: 4.0/255.0, green: 217.0/255.0, blue: 255.0/255.0, alpha: 0.7), for: UIControl.State.normal)
-        targetChangeButton.addTarget(self, action: #selector(changeTing(_:)), for: .touchUpInside)
+        targetChangeButton.addTarget(self, action: #selector(changeTarget(_:)), for: .touchUpInside)
         
         self.sceneView.addSubview(superAwesomeButton)
         self.sceneView.addSubview(targetChangeButton)
     }
     
-    @objc func specialTing(_ sender: UIButton!){
+    // use a counter to cycle through the different pictures. These will be used for the "wizard of oz" part of the prototype
+    @objc func cyclePictures(_ sender: UIButton!){
         let newImage: String = "iv_prototype_" + String(imageCounter)
         print("new image: ", newImage)
         modifyImage(imageName: newImage)
         imageCounter += 1
     
-        // set things so that when the image is at the part where it tells the user to follow the guides, the arrow gif will appear. the step after will remove it
+        // scripted part that will show the gifs and images when at the right step
         if (imageCounter == 8) {
             sceneView.scene.rootNode.addChildNode(addGif(name: "blue_arrow", number: 0))
             sceneView.scene.rootNode.addChildNode(addGif(name: "blue_arrow", number: 1))
@@ -123,6 +123,8 @@ class ViewController: UIViewController {
             sceneView.scene.rootNode.addChildNode(targetNode1)
             
         }
+        
+        // remove the AR guides
         if (imageCounter == 9){
             let arrowNode0 = self.sceneView.scene.rootNode.childNode(withName: "arrowNode0", recursively: true)
             let arrowNode1 = self.sceneView.scene.rootNode.childNode(withName: "arrowNode1", recursively: true)
@@ -136,8 +138,9 @@ class ViewController: UIViewController {
 
         }
         
+        // at the part where the needle angle is being corrected.
+        // add the red X
         if (imageCounter == 10){
-    
             let xImage = UIImage(named: "red_x")
             let xPlane = SCNPlane(width: 0.000125, height: 0.000125)
             let xMaterial = SCNMaterial()
@@ -153,6 +156,8 @@ class ViewController: UIViewController {
             
             sceneView.scene.rootNode.addChildNode(xNode)
         }
+        
+        // remove the red X and add the green arrow
         if (imageCounter == 11){
             let xNode = self.sceneView.scene.rootNode.childNode(withName: "xNode", recursively: true)
             xNode?.removeFromParentNode()
@@ -170,13 +175,16 @@ class ViewController: UIViewController {
             checkNode.name = "checkNode"
             sceneView.scene.rootNode.addChildNode(checkNode)
         }
+        
+        // remove the green arrow
         if (imageCounter == 12){
             let checkNode = self.sceneView.scene.rootNode.childNode(withName: "checkNode", recursively: true)
             checkNode?.removeFromParentNode()
         }
     }
     
-    @objc func changeTing(_ sender: UIButton!){
+    // similar to above function, this cycles through the different AR guides
+    @objc func changeTarget(_ sender: UIButton!){
         targetFlip += 1
         let arrowNode0 = self.sceneView.scene.rootNode.childNode(withName: "arrowNode0", recursively: true)
         let arrowNode1 = self.sceneView.scene.rootNode.childNode(withName: "arrowNode1", recursively: true)
@@ -201,8 +209,8 @@ class ViewController: UIViewController {
         }
     }
     
-    func modifyImage(imageName: String){	
-        
+    // updates the current detected image to the new image, like a slide show
+    func modifyImage(imageName: String){
         let imageNode = self.sceneView.scene.rootNode.childNode(withName: "imageNode", recursively: true)
         let image = UIImage(named: imageName)
         let planeMaterial = SCNMaterial()
